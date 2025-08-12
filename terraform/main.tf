@@ -137,8 +137,8 @@ resource "aws_ecs_task_definition" "lesson7" {
   memory = "512"
   container_definitions = jsonencode([
     {
-      name = "web"
-      image = "nginx:latest"
+      name = aws_ecr_repository.custom_web.name
+      image = aws_ecr_repository.custom_web.repository_url
       portMappings = [
        {
          containerPort = 80
@@ -299,5 +299,43 @@ resource "aws_ecs_service" "nginx" {
   tags = {
     Name = "${var.project_name}-service"
   }
+}
+
+resource "aws_ecr_repository" "custom_web" {
+  name                 = var.repository_name
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Environment = var.environment
+    Project     = "DevOps-Course"
+    Lesson      = "5"
+  }
+}
+
+# ECR Lifecycle Policy
+resource "aws_ecr_lifecycle_policy" "python_calculator_policy" {
+  repository = aws_ecr_repository.custom_web.name
+
+  policy = jsonencode({
+    rules = [
+      {
+        rulePriority = 1
+        description  = "Keep last 1 images"
+        selection = {
+          tagStatus   = "tagged"
+          tagPrefixList = ["v"]
+          countType   = "imageCountMoreThan"
+          countNumber = 1
+        }
+        action = {
+          type = "expire"
+        }
+      }
+    ]
+  })
 }
 

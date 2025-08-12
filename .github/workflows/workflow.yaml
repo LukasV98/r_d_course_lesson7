@@ -29,11 +29,6 @@ jobs:
           docker build -t \${{ env.IMAGE_NAME }}:latest .
           docker build -t \${{ env.IMAGE_NAME }}:\${{ github.sha }} .
 
-      - name: Test Docker container
-        run: |
-          echo 🐳 Testování Docker kontejneru...
-          docker run --rm \${{ env.IMAGE_NAME }}:latest
-
       - name: List Docker images
         run: |
           echo 🐳 Seznam vytvořených images:

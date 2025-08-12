@@ -35,44 +35,6 @@ data "aws_subnets" "albsubnets" {
   }
 }
 
-resource "aws_ecr_repository" "custom_web" {
-  name                 = var.repository_name
-  image_tag_mutability = "MUTABLE"
-
-  image_scanning_configuration {
-    scan_on_push = true
-  }
-
-  tags = {
-    Environment = var.environment
-    Project     = "DevOps-Course"
-    Lesson      = "7"
-  }
-}
-
-# ECR Lifecycle Policy
-resource "aws_ecr_lifecycle_policy" "nginx_policy" {
-  repository = aws_ecr_repository.custom_web.name
-
-  policy = jsonencode({
-    rules = [
-      {
-        rulePriority = 1
-        description  = "Keep last 1 images"
-        selection = {
-          tagStatus   = "tagged"
-          tagPrefixList = ["v"]
-          countType   = "imageCountMoreThan"
-          countNumber = 1
-        }
-        action = {
-          type = "expire"
-        }
-      }
-    ]
-  })
-}
-
 resource "aws_security_group" "alb" {
   name = "${var.project_name}-alb-sg"
   description = "Security group ALB"
@@ -175,8 +137,8 @@ resource "aws_ecs_task_definition" "lesson7" {
   memory = "512"
   container_definitions = jsonencode([
     {
-      name = aws_ecr_repository.custom_web.name
-      image = aws_ecr_repository.custom_web.repository_url
+      name = "web"
+      image = "nginx:latest"
       portMappings = [
        {
          containerPort = 80
@@ -263,11 +225,7 @@ resource "aws_iam_role" "ecs_task_execution_role" {
       Action = "sts:AssumeRole"
       Effect = "Allow"
       Principal = {
-        Service = [
-                "s3.amazonaws.com",
-                "lambda.amazonaws.com",
-                "ecs.amazonaws.com"
-        ]
+        Service =  "ecs-tasks.amazonaws.com"
       }
     }]
   })
@@ -342,6 +300,4 @@ resource "aws_ecs_service" "nginx" {
     Name = "${var.project_name}-service"
   }
 }
-
-
 

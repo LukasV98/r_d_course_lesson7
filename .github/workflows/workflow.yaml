@@ -24,15 +24,15 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-region: ${{ env.aws_region }}
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
+          aws-region: \${{ env.aws_region }}
+        aws-access-key-id: \${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: \${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: \${{ env.AWS_REGION }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-        terraform_version: ${{ env.TF_VERSION }}
+        terraform_version: \${{ env.TF_VERSION }}
 
       - name: Terraform Format Check
         id: fmt
@@ -58,10 +58,10 @@ jobs:
         uses: actions/github-script@v7
         if: github.event_name == 'pull_request'
         env:
-        PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        PLAN: "terraform\n\${{ steps.plan.outputs.stdout }}"
         with:
                 script: ''
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: \${{ secrets.GITHUB_TOKEN }}
         script: |
           const output = `#### Terraform Format and Style 💎 \`${process.env.FMT}\`
             
@@ -73,7 +73,7 @@ jobs:
             
             </details>
             
-            *Pushed by: @${process.env.ACTOR}, Action: \`${process.env.EVENT_NAME}\`*`;
+            *Pushed by: @\${process.env.ACTOR}, Action: \`\${process.env.EVENT_NAME}\`*`;
     
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -102,16 +102,16 @@ jobs:
       - name: Test Application
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
-            echo &quot;Waiting for ECS service to be stable...&quot;
+            echo "Waiting for ECS service to be stable..."
             sleep 60
             
-            echo &quot;Testing application availability...&quot;
+            echo "Testing application availability..."
             for i in {1..10}; do
-            if curl -f &quot;\${{ steps.lb_url.outputs.url }}&quot;; then
-            echo &quot;Application is responding!&quot;
+            if curl -f "\${{ steps.lb_url.outputs.url }}"; then
+            echo "Application is responding!"
             break
             else
-            echo &quot;Attempt \$i failed, retrying in 30 seconds...&quot;
+            echo "Attempt \$i failed, retrying in 30 seconds..."
             sleep 30
             fi
             done

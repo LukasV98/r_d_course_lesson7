@@ -75,12 +75,12 @@ jobs:
 
       - name: Terraform Init
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        working-directory: /terraform
+        working-directory: ./terraform
         run: terraform init
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        working-directory: /terraform
+        working-directory: ./terraform
         run: terraform apply -auto-approve -input=false
 
       - name: Get Load Balancer URL

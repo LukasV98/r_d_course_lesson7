@@ -1,3 +1,5 @@
+name: Terraform CI/CD
+
 on:
   push:
     branches: [main]
@@ -5,12 +7,12 @@ on:
     branches: [main]
 
 env:
-   AWS_REGION: eu-central-1
-   TF_VERSION: 1.5.0
+  AWS_REGION: eu-central-1
+  TF_VERSION: 1.5.0
 
 jobs:
   terraform:
-    name: 'Terraform'
+    name: Terraform
     runs-on: ubuntu-latest
 
     permissions:
@@ -40,7 +42,6 @@ jobs:
 
       - name: Terraform Init
         id: init
-
         run: terraform init
 
       - name: Terraform Validate
@@ -58,33 +59,36 @@ jobs:
         if: github.event_name == 'pull_request'
         env:
           PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
-          with:
-            github-token: \${{ secrets.GITHUB_TOKEN }}
-            script: |
-              const output = #### Terraform Format and Style 💎 \`${process.env.FMT}\`
-                
-              <details>
-                <summary>
-                    Show Plan
-                </summary>
-                
-                \`\`\`
-                ${process.env.PLAN}
-                \`\`\`
-                
-                </details>
-                
-                *Pushed by: @${process.env.ACTOR}, Action: \`${process.env.EVENT_NAME}\`*`;
-        
-                github.rest.issues.createComment({
-                  issue_number: context.issue.number,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  body: output
-                });
-
+          ACTOR: ${{ github.actor }}
+          EVENT_NAME: ${{ github.event_name }}
+          FMT: ${{ steps.fmt.outcome }}
+          INIT: ${{ steps.init.outcome }}
+          VALIDATE: ${{ steps.validate.outcome }}
+          PLAN_STATUS: ${{ steps.plan.outcome }}
         with:
-          script: ''
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Format and Style 💎 \`${process.env.FMT}\`
+#### Terraform Initialization ⚙️ \`${process.env.INIT}\`
+#### Terraform Validation ✅ \`${process.env.VALIDATE}\`
+#### Terraform Plan 📖 \`${process.env.PLAN_STATUS}\`
+
+            <details><summary>Show Plan</summary>
+            
+            \`\`\`
+            ${process.env.PLAN}
+            \`\`\`
+            
+            </details>
+            
+            *Pushed by: @${process.env.ACTOR}, Action: \`${process.env.EVENT_NAME}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
 
       - name: Terraform Plan Status
         if: steps.plan.outcome == 'failure'
@@ -95,27 +99,26 @@ jobs:
         run: terraform apply -auto-approve -input=false
 
       - name: Get Load Balancer URL
-
-        if: github.ref == 'refs/heads/main' &&  github.event_name == 'push'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         id: lb_url
         run: |
-            LB_URL=\$(terraform output -raw load_balancer_url)
-            echo "url=\$LB_URL" >> \$GITHUB_OUTPUT
-            echo "Load Balancer URL: \$LB_URL"
+          LB_URL=$(terraform output -raw load_balancer_url)
+          echo "url=$LB_URL" >> $GITHUB_OUTPUT
+          echo "Load Balancer URL: $LB_URL"
 
       - name: Test Application
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
-            echo "Waiting for ECS service to be stable..."
-            sleep 60
-            
-            echo "Testing application availability..."
-            for i in {1..10}; do
-            if curl -f "\${{ steps.lb_url.outputs.url }}"; then
-            echo "Application is responding!"
-            break
+          echo "Waiting for ECS service to be stable..."
+          sleep 60
+          
+          echo "Testing application availability..."
+          for i in {1..10}; do
+            if curl -f "${{ steps.lb_url.outputs.url }}"; then
+              echo "Application is responding!"
+              break
             else
-            echo "Attempt \$i failed, retrying in 30 seconds..."
-            sleep 30
+              echo "Attempt $i failed, retrying in 30 seconds..."
+              sleep 30
             fi
-            done
+          done

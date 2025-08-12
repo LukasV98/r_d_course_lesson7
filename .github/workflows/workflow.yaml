@@ -41,14 +41,17 @@ jobs:
         continue-on-error: true
 
       - name: Terraform Init
+        working-directory: ./terraform
         id: init
         run: terraform init
 
       - name: Terraform Validate
+        working-directory: ./terraform
         id: validate
         run: terraform validate -no-color
 
       - name: Terraform Plan
+        working-directory: ./terraform
         id: plan
         if: github.event_name == 'pull_request'
         run: terraform plan -no-color -input=false
@@ -73,11 +76,6 @@ jobs:
         if: steps.plan.outcome == 'failure'
         run: exit 1
 
-      - name: Terraform Init
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        working-directory: ./terraform
-        run: terraform init
-
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         working-directory: ./terraform
@@ -85,6 +83,7 @@ jobs:
 
       - name: Get Load Balancer URL
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        working-directory: ./terraform
         id: lb_url
         run: |
           LB_URL=$(terraform output -raw load_balancer_url)

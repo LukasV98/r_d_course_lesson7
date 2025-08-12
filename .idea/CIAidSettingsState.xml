@@ -3,6 +3,7 @@
   <component name="CIAidSettingsState">
     <option name="yamlToUserMarkings">
       <map>
+        <entry key="$PROJECT_DIR$/.github/workflows/workflow.yaml" value="false" />
         <entry key="$PROJECT_DIR$/.github/workflows/workflow.yml" value="false" />
       </map>
     </option>

@@ -4,9 +4,9 @@ on:
   pull_request:
     branches: [main]
 
-  env:
-    AWS_REGION: eu-central-1
-    TF_VERSION: 1.5.0
+env:
+   AWS_REGION: eu-central-1
+   TF_VERSION: 1.5.0
 
 jobs:
   terraform:
@@ -14,14 +14,14 @@ jobs:
     runs-on: ubuntu-latest
 
 # Nastavení permissions pro OIDC
-  permissions:
+permissions:
 
   contents: read
   id-token: write
 
   steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -103,7 +103,7 @@ jobs:
       run: |
         LB_URL=\$(terraform output -raw load_balancer_url)
         echo "url=\$LB_URL" >> \$GITHUB_OUTPUT
-       echo "Load Balancer URL: \$LB_URL"
+        echo "Load Balancer URL: \$LB_URL"
 
     - name: Test Application
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'

@@ -59,11 +59,14 @@ jobs:
         env:
           PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
           with:
-            github-token: ${{ secrets.GITHUB_TOKEN }}
+            github-token: \${{ secrets.GITHUB_TOKEN }}
             script: |
-              const output = `#### Terraform Format and Style 💎 \`${process.env.FMT}\`
+              const output = #### Terraform Format and Style 💎 \`${process.env.FMT}\`
                 
-              <details><summary>Show Plan</summary>
+              <details>
+                <summary>
+                    Show Plan
+                </summary>
                 
                 \`\`\`
                 ${process.env.PLAN}

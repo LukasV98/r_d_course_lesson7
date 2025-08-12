@@ -35,6 +35,44 @@ data "aws_subnets" "albsubnets" {
   }
 }
 
+resource "aws_ecr_repository" "custom_web" {
+  name                 = var.repository_name
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Environment = var.environment
+    Project     = "DevOps-Course"
+    Lesson      = "7"
+  }
+}
+
+# ECR Lifecycle Policy
+resource "aws_ecr_lifecycle_policy" "nginx_policy" {
+  repository = aws_ecr_repository.custom_web.name
+
+  policy = jsonencode({
+    rules = [
+      {
+        rulePriority = 1
+        description  = "Keep last 1 images"
+        selection = {
+          tagStatus   = "tagged"
+          tagPrefixList = ["v"]
+          countType   = "imageCountMoreThan"
+          countNumber = 1
+        }
+        action = {
+          type = "expire"
+        }
+      }
+    ]
+  })
+}
+
 resource "aws_security_group" "alb" {
   name = "${var.project_name}-alb-sg"
   description = "Security group ALB"
@@ -305,41 +343,5 @@ resource "aws_ecs_service" "nginx" {
   }
 }
 
-resource "aws_ecr_repository" "custom_web" {
-  name                 = var.repository_name
-  image_tag_mutability = "MUTABLE"
 
-  image_scanning_configuration {
-    scan_on_push = true
-  }
-
-  tags = {
-    Environment = var.environment
-    Project     = "DevOps-Course"
-    Lesson      = "5"
-  }
-}
-
-# ECR Lifecycle Policy
-resource "aws_ecr_lifecycle_policy" "python_calculator_policy" {
-  repository = aws_ecr_repository.custom_web.name
-
-  policy = jsonencode({
-    rules = [
-      {
-        rulePriority = 1
-        description  = "Keep last 1 images"
-        selection = {
-          tagStatus   = "tagged"
-          tagPrefixList = ["v"]
-          countType   = "imageCountMoreThan"
-          countNumber = 1
-        }
-        action = {
-          type = "expire"
-        }
-      }
-    ]
-  })
-}
 

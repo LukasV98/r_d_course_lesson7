@@ -27,7 +27,6 @@ jobs:
       - run: chromedriver --version
 
       - name: Setup Go
-        working-directory: ./tests/go_tests
         uses: actions/setup-go@v5
         with:
           go-version: stable

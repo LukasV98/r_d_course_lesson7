@@ -20,20 +20,23 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Install Chromium
+        working-directory: ./tests/go_tests
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
 
       - name: Setup ChromeDriver
+        working-directory: ./tests/go_tests
         uses: nanasess/setup-chromedriver@v2
       - run: chromedriver --version
 
       - name: Setup Go
+        working-directory: ./tests/go_tests
         uses: actions/setup-go@v5
         with:
           go-version: stable
 
       - name: Go Mod Init
         working-directory: ./tests/go_tests
-        run: go mod init
+        run: go mod init example.com/m
 
       - name: Run Go Tests
         working-directory: ./tests/go_tests

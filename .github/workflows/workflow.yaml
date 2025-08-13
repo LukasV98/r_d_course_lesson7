@@ -104,6 +104,26 @@ jobs:
         working-directory: ./terraform
         run: terraform apply -auto-approve -input=false
 
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image to ECR
+        run: |
+          ecr_url=$(cd terraform && terraform output -raw ecr_repository_url)
+          sha=${{ github.sha }}
+          
+          docker build -t $ecr_url:latest .
+          docker build -t $ecr_url:$sha .
+          
+          echo "�� Pushing images to ECR..."
+          
+          docker push $ecr_url:latest
+          docker push $ecr_url:$sha
+          
+          echo "✅ Images pushed successfully!"
+          echo "Repository URL:$ecr_url"
+
       - name: Get Load Balancer URL
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         working-directory: ./terraform
@@ -130,22 +150,3 @@ jobs:
             fi
           done
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build and push Docker image to ECR
-        run: |
-              ecr_url=$(cd terraform && terraform output -raw ecr_repository_url)
-              sha=${{ github.sha }}
-          
-              docker build -t $ecr_url:latest .
-              docker build -t $ecr_url:$sha .
-          
-              echo "�� Pushing images to ECR..."
-          
-              docker push $ecr_url:latest
-              docker push $ecr_url:$sha
-          
-              echo "✅ Images pushed successfully!"
-              echo "Repository URL:$ecr_url"

@@ -43,14 +43,17 @@ jobs:
 
       - name: Install Selenium
         working-directory: ./tests/go_tests
-        run: go get github.com/tebeka/selenium@latest
+        run: |
+            go get github.com/tebeka/selenium@latest
+            go mod tidy
 
       - name: Run Go Tests
         working-directory: ./tests/go_tests
         env:
-      # Pokud action vystavuje CHROMEDRIVER_PATH, kód ho použije.
-        CHROMEDRIVER_PATH: \${{ env.CHROMEDRIVER_PATH }}
+            # Nastavíme cestu k chromedriveru z výstupu akce setup-chromedriver
+            CHROMEDRIVER_PATH: ${{ steps.chromedriver.outputs.chromedriver-path }}
         run: go run tests.go
+
 
 
 

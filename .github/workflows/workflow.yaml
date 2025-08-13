@@ -12,9 +12,34 @@ env:
   IMAGE_NAME: custom-web
 
 jobs:
-  build-and-test:
+  test-web:
     runs-on: ubuntu-latest
 
+    steps:
+      - name: Check Repository
+        uses: actions/checkout@v5
+
+      - name: Get Chromium
+        working_directory: ./tests/go_tests
+        run: |
+          wget "https://storage.googleapis.com/chrome-for-testing-public/139.0.7258.68/linux64/chrome-linux64.zip"
+          unzip chromedriver_linux64.zip
+
+      - name: GoLang Install
+        working_directory: ./tests/go_tests
+        run: sudo snap install go  --classic
+
+      - name: GoLang Init
+        working_directory: ./tests/go_tests
+        run: go mod init
+
+      - name: GoLang Run Test
+        working_directory: ./tests/go_tests
+        run: go run tests.go
+
+
+  build-and-test-docker:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Check Repository

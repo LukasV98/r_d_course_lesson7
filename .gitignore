@@ -37,3 +37,6 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+/chrome-win64/
+/tests/go_tests/go.mod
+/tests/go_tests/chromedriver.exe

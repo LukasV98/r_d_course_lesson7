@@ -135,10 +135,11 @@ resource "aws_ecs_task_definition" "lesson7" {
   requires_compatibilities = ["FARGATE"]
   cpu = "256"
   memory = "512"
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   container_definitions = jsonencode([
     {
       name = "web"
-      image = "nginx:latest"
+      image = aws_ecr_repository.custom_web.repository_url
       portMappings = [
        {
          containerPort = 80
@@ -222,13 +223,43 @@ resource "aws_iam_role" "ecs_task_execution_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Action = "sts:AssumeRole"
+      Sid = ""
+      Action = [ "sts:AssumeRole" ]
       Effect = "Allow"
       Principal = {
         Service =  "ecs-tasks.amazonaws.com"
       }
     }]
   })
+}
+
+resource "aws_iam_policy" "ecs_policy" {
+  name        = "ecs_policy"
+  description = "Policy for ECS tasks to access ECR and CloudWatch Logs"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["ecr:GetAuthorizationToken", "ecr:BatchCheckLayerAvailability", "ecr:GetDownloadUrlForLayer", "ecr:BatchGetImage"]
+        Resource = "*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["logs:Describe*", "logs:Get*",
+                    "logs:List*",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"]
+        Resource = "arn:aws:logs:eu-central-1:739133790707:log-group:/ecs/lesson8:*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_policy_attachment" {
+  role       = aws_iam_role.ecs_task_execution_role.name
+  policy_arn = aws_iam_policy.ecs_policy.arn
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
@@ -301,3 +332,40 @@ resource "aws_ecs_service" "nginx" {
   }
 }
 
+resource "aws_ecr_repository" "custom_web" {
+  name                 = var.repository_name
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Environment = var.environment
+    Project     = "DevOps-Course"
+    Lesson      = "5"
+  }
+}
+
+# ECR Lifecycle Policy
+resource "aws_ecr_lifecycle_policy" "custom_web_policy" {
+  repository = aws_ecr_repository.custom_web.name
+
+  policy = jsonencode({
+    rules = [
+      {
+        rulePriority = 1
+        description  = "Keep last 1 images"
+        selection = {
+          tagStatus   = "tagged"
+          tagPrefixList = ["v"]
+          countType   = "imageCountMoreThan"
+          countNumber = 1
+        }
+        action = {
+          type = "expire"
+        }
+      }
+    ]
+  })
+}

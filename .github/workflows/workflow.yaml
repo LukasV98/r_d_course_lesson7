@@ -30,7 +30,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: 'latest'  # nebo tvá verze
+          go-version: stable
 
       - name: Go Mod Init
         working-directory: ./tests/go_tests

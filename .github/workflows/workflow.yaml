@@ -19,18 +19,25 @@ jobs:
       - name: Check Repository
         uses: actions/checkout@v5
 
-      - name: Get Chromium
-        working_directory : ./tests/go_tests
-      - uses: nanasess/setup-chromedriver@v2
+      - name: Install Chromium
+        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+
+      - name: Setup ChromeDriver
+        uses: nanasess/setup-chromedriver@v2
+
       - run: chromedriver --version
 
-      - name: GoLang Install
-        run: sudo snap install go  --classic
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'latest'  # nebo tvá verze
 
-      - name: GoLang Init
+      - name: Go Mod Init
+        working-directory: ./tests/go_tests
         run: go mod init
 
-      - name: GoLang Run Test
+      - name: Run Go Tests
+        working-directory: ./tests/go_tests
         run: go run tests.go
 
 

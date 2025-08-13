@@ -19,17 +19,18 @@ jobs:
       - name: Check Repository
         uses: actions/checkout@v5
 
-      - name: Install Chromium
-        working-directory: ./tests/go_tests
-        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v2
 
       - name: Setup ChromeDriver
         uses: nanasess/setup-chromedriver@v2
 
-      - name: Check ChromeDriver version
-        working-directory: ./tests/go_tests
-        run: | 
-          chromedriver --version
+      - name: Verify Chrome + ChromeDriver
+        run: |
+            which chrome || true
+            chrome --version || true
+            which chromedriver
+            chromedriver --version
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -38,7 +39,7 @@ jobs:
 
       - name: Init Go Module
         working-directory: ./tests/go_tests
-        run: go mod init example.com/m
+        run: go mod init example.com/m || true
 
       - name: Install Selenium
         working-directory: ./tests/go_tests
@@ -46,7 +47,11 @@ jobs:
 
       - name: Run Go Tests
         working-directory: ./tests/go_tests
+        env:
+      # Pokud action vystavuje CHROMEDRIVER_PATH, kód ho použije.
+        CHROMEDRIVER_PATH: ${{ env.CHROMEDRIVER_PATH }}
         run: go run tests.go
+
 
 
   build-and-test-docker:

@@ -2,13 +2,19 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/tebeka/selenium"
 	"github.com/tebeka/selenium/chrome"
 )
 
 func main() {
-	service, err := selenium.NewChromeDriverService("./chromedriver", 4444)
+	cdPath := os.Getenv("CHROMEDRIVER_PATH")
+	if cdPath == "" {
+		cdPath = "chromedriver"
+	}
+
+	service, err := selenium.NewChromeDriverService(cdPath, 4444)
 	if err != nil {
 		log.Fatal("Error:", err)
 	}

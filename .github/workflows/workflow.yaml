@@ -35,6 +35,9 @@ jobs:
         working-directory: ./tests/go_tests
         run: go mod init example.com/m
 
+      - name: Install Selenium
+        run: go get github.com/tebeka/selenium
+
       - name: Run Go Tests
         working-directory: ./tests/go_tests
         run: go run tests.go

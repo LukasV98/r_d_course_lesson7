@@ -22,7 +22,7 @@ func main() {
 	defer func(service *selenium.Service) {
 		err := service.Stop()
 		if err != nil {
-
+			log.Fatal("Error:", err)
 		}
 	}(service)
 

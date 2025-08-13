@@ -29,7 +29,6 @@ jobs:
         run: sudo snap install go  --classic
 
       - name: GoLang Init
-        working_directory: ./tests/go_tests
         run: go mod init
 
       - name: GoLang Run Test

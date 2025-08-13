@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	service, err := selenium.NewChromeDriverService("./chromedriver.exe", 4444)
+	service, err := selenium.NewChromeDriverService("./chromedriver", 4444)
 	if err != nil {
 		log.Fatal("Error:", err)
 	}

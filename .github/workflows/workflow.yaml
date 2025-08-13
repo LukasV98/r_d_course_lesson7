@@ -26,7 +26,6 @@ jobs:
           unzip chromedriver_linux64.zip
 
       - name: GoLang Install
-        working_directory: ./tests/go_tests
         run: sudo snap install go  --classic
 
       - name: GoLang Init
@@ -34,7 +33,6 @@ jobs:
         run: go mod init
 
       - name: GoLang Run Test
-        working_directory: ./tests/go_tests
         run: go run tests.go
 
 

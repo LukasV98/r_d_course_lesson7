@@ -18,7 +18,13 @@ func main() {
 	if err != nil {
 		log.Fatal("Error:", err)
 	}
-	defer service.Stop()
+
+	defer func(service *selenium.Service) {
+		err := service.Stop()
+		if err != nil {
+
+		}
+	}(service)
 
 	caps := selenium.Capabilities{}
 	caps.AddChrome(chrome.Capabilities{Args: []string{"--headless"}})

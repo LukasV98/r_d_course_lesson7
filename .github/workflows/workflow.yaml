@@ -20,8 +20,8 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Get Chromium
-        uses: nanasess/setup-chromedriver@v2
-        run: chromedriver --version
+      - uses: nanasess/setup-chromedriver@v2
+      - run: chromedriver --version
 
       - name: GoLang Install
         run: sudo snap install go  --classic

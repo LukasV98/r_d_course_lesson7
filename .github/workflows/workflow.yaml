@@ -49,7 +49,7 @@ jobs:
         working-directory: ./tests/go_tests
         env:
       # Pokud action vystavuje CHROMEDRIVER_PATH, kód ho použije.
-        CHROMEDRIVER_PATH: ${{ env.CHROMEDRIVER_PATH }}
+        CHROMEDRIVER_PATH: \${{ env.CHROMEDRIVER_PATH }}
         run: go run tests.go
 
 
